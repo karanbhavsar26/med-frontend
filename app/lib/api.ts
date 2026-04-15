@@ -7,25 +7,37 @@ if (!AUTH_TOKEN) {
 }
 
 export const extractReport = async (file: File): Promise<any> => {
-  const formData = new FormData();
-  formData.append('file', file);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  console.log("📤 Sending request to:", `${API_BASE}/extract`);
-  console.log("🔑 Using token:", AUTH_TOKEN ? "Present" : "MISSING!");
+    console.log("📤 Sending request to:", `${API_BASE}/extract`);
+    console.log("🔑 Using token:", AUTH_TOKEN ? "Present" : "MISSING!");
 
-  const response = await fetch(`${API_BASE}/extract`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${AUTH_TOKEN}`,
-    },
-    body: formData,
-  });
+    const response = await fetch(`${API_BASE}/extract`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${AUTH_TOKEN}`,
+      },
+      body: formData,
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Backend error response:", response.status, errorText);
-    throw new Error(`Failed (${response.status}): ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Backend error response:", response.status, errorText);
+
+      throw new Error(`Failed (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+
+  } catch (error: any) {
+    console.error("🚨 API call failed:", error);
+
+    // Optional: normalize error message for UI
+    throw new Error(
+      error?.message || "Something went wrong while extracting report"
+    );
   }
-
-  return response.json();
 };
